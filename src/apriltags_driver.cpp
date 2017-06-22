@@ -15,7 +15,11 @@
 #include <lcm/lcm-cpp.hpp>
 #include "LcmWrapper.hpp"
 
+#ifdef BOT_CORE_H
+#include <lcmtypes/bot_core.h>
+#else
 #include <lcmtypes/bot_core.hpp>
+#endif
 #include <lcmtypes/bot_core/images_t.hpp>
 #include <lcmtypes/bot_core/image_t.hpp>
 
