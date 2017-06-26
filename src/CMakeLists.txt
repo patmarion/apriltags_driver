@@ -5,13 +5,38 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 add_executable(${APP_NAME} apriltags_driver.cpp LcmWrapper.cpp)
 
+find_package(libbot QUIET)
+if(NOT libbot_FOUND)
+  set(libbot_pkg bot2-core bot2-param-client lcmtypes_bot2-core)
+else()
+  # `lcmtypes/bot_core.hpp` is called `lcmtypes/bot_core.h` when CMake
+  # configuration file is generated.
+  target_compile_options(${APP_NAME} PRIVATE -DBOT_CORE_H)
+  list(APPEND libbot_LIBRARIES libbot::bot2-param-client)
+  # Find glib-2.0 which is not automatically found by CMake
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(glib-2.0 glib-2.0 IMPORTED_TARGET)
+  if (glib-2.0_FOUND)
+     list(APPEND libbot_LIBRARIES PkgConfig::glib-2.0)
+  else()
+    message(FATAL_ERROR "glib-2.0 not found")
+  endif()
+endif()
+find_package(yaml-cpp QUIET)
+if(NOT yaml-cpp_FOUND)
+  set(yaml-cpp_pkg yaml-cpp)
+endif()
+find_package(Eigen3 QUIET)
+if(NOT Eigen3_FOUND)
+  set(eigen3_pkg eigen3)
+endif()
+target_link_libraries(${APP_NAME} ${Eigen3_LIBRARIES} ${yaml-cpp_LIBRARIES} ${libbot_LIBRARIES})
+
 pods_use_pkg_config_packages(${APP_NAME}
   apriltags
-  bot2-core
-  bot2-param-client
-  lcmtypes_bot2-core
-  yaml-cpp
-  eigen3
+  ${libbot_pkg}
+  ${yaml-cpp_pkg}
+  ${eigen3_pkg}
 )
 
 find_package(OpenCV REQUIRED)
